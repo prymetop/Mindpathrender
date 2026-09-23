@@ -1,0 +1,16 @@
+{
+  "name": "mindpath-v2",
+  "version": "2.0.0",
+  "private": true,
+  "description": "MindPath v2 - modular private Telegram AI assistant",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260922.0",
+    "typescript": "^5.9.2",
+    "wrangler": "^4.39.0"
+  }
+}
