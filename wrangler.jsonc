@@ -1,18 +1,16 @@
 {
-"$schema": "node_modules/wrangler/config-schema.json",
-"name": "mindpath-v2",
-"main": "src/index.ts",
-"compatibility_date": "2026-10-09",
-"observability": {
-"enabled": true
-},
-"d1_databases": [
-{
-"binding": "DB",
-// wrangler.jsonc
-"name": "mindpathrender",
-"vars": {},
-"database_id": "6f6af66a-02ee-4be1-a4e5-f6f02077daa3"
-}
-]
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mindpathrender",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-09",
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "mindpath",
+      "database_id": "6f6af66a-02ee-4be1-a4e5-f6f02077daa3"
+    }
+  ]
 }
