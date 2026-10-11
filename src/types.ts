@@ -30,6 +30,12 @@ export interface TelegramMessage {
   text?: string;
   caption?: string;
   photo?: Array<{ file_id: string; width: number; height: number; file_size?: number }>;
+  document?: {
+    file_id: string;
+    file_name?: string;
+    mime_type?: string;
+    file_size?: number;
+  };
   date?: number;
 }
 
@@ -58,5 +64,6 @@ export interface AIProvider {
     firstName: string;
     userText?: string;
     image?: { mimeType: string; dataBase64: string };
+    images?: Array<{ mimeType: string; dataBase64: string }>;
   }): Promise<string>;
 }

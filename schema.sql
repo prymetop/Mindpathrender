@@ -17,3 +17,15 @@ CREATE TABLE IF NOT EXISTS settings (
 
 CREATE INDEX IF NOT EXISTS idx_processed_events_processed_at
 ON processed_events(processed_at);
+CREATE TABLE IF NOT EXISTS image_context (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  chat_id TEXT NOT NULL,
+  file_id TEXT NOT NULL,
+  mime_type TEXT NOT NULL DEFAULT 'image/jpeg',
+  caption TEXT,
+  created_at INTEGER NOT NULL,
+  expires_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_image_context_chat_expiry
+ON image_context(chat_id, expires_at);
