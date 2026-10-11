@@ -21,10 +21,26 @@ async function request<T>(
   };
 
   if (!response.ok || !data.ok) {
-    throw new Error(`Telegram ${method} failed: ${response.status} ${data.description ?? ""}`);
+    throw new Error(
+      `Telegram ${method} failed: ${response.status} ${data.description ?? ""}`
+    );
   }
 
   return data.result as T;
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function formatTelegramText(text: string): string {
+  return escapeHtml(text)
+    .replace(/\*\*(.*?)\*\*/g, "<b>$1</b>")
+    .replace(/(?<!\*)\*([^*\n]+)\*(?!\*)/g, "<i>$1</i>")
+    .replace(/`([^`\n]+)`/g, "<code>$1</code>");
 }
 
 export async function sendTelegramMessage(
@@ -32,30 +48,73 @@ export async function sendTelegramMessage(
   chatId: string | number,
   text: string
 ): Promise<void> {
-  const chunks = text.match(/[\s\S]{1,4000}/g) ?? [text];
+  const formatted = formatTelegramText(text);
+  const chunks = formatted.match(/[\s\S]{1,4000}/g) ?? [formatted];
+
   for (const chunk of chunks) {
-    await request(env, "sendMessage", {
-      chat_id: chatId,
-      text: chunk,
-      disable_web_page_preview: true
-    });
+    try {
+      await request(env, "sendMessage", {
+        chat_id: chatId,
+        text: chunk,
+        parse_mode: "HTML",
+        disable_web_page_preview: true
+      });
+    } catch (error) {
+      console.error(
+        "Formatted Telegram message failed; retrying as plain text.",
+        error
+      );
+
+      await request(env, "sendMessage", {
+        chat_id: chatId,
+        text,
+        disable_web_page_preview: true
+      });
+
+      return;
+    }
   }
 }
 
-export async function sendTyping(env: Env, chatId: string | number): Promise<void> {
-  await request(env, "sendChatAction", { chat_id: chatId, action: "typing" });
+export async function sendTyping(
+  env: Env,
+  chatId: string | number
+): Promise<void> {
+  await request(env, "sendChatAction", {
+    chat_id: chatId,
+    action: "typing"
+  });
 }
 
-export async function getFilePath(env: Env, fileId: string): Promise<string> {
-  const result = await request<{ file_path?: string }>(env, "getFile", { file_id: fileId });
-  if (!result.file_path) throw new Error("Telegram file path unavailable.");
+export async function getFilePath(
+  env: Env,
+  fileId: string
+): Promise<string> {
+  const result = await request<{ file_path?: string }>(
+    env,
+    "getFile",
+    { file_id: fileId }
+  );
+
+  if (!result.file_path) {
+    throw new Error("Telegram file path unavailable.");
+  }
+
   return result.file_path;
 }
 
-export async function setWebhook(env: Env, webhookUrl: string): Promise<void> {
+export async function setWebhook(
+  env: Env,
+  webhookUrl: string
+): Promise<void> {
   await request(env, "setWebhook", {
     url: webhookUrl,
     secret_token: env.TELEGRAM_WEBHOOK_SECRET || undefined,
-    allowed_updates: ["message", "callback_query", "channel_post", "edited_channel_post"]
+    allowed_updates: [
+      "message",
+      "callback_query",
+      "channel_post",
+      "edited_channel_post"
+    ]
   });
 }
